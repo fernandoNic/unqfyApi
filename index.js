@@ -1,12 +1,12 @@
 const express = require("express");
 const app = express();
-const unqmod = require("../../UNQfy/unqfy");
+const unqmod = require("../unqfy/unqfy");
 const fs = require('fs'); // necesitado para guardar/cargar unqfy
 
 const  artistRouter = express.Router();
 
 
-function getUNQfy(filename = '../../UNQfy/data.json') {
+function getUNQfy(filename = '../unqfy/data.json') {
     let unqfy = new unqmod.UNQfy();
     if (fs.existsSync(filename)) {
       unqfy = unqmod.UNQfy.load(filename);
@@ -17,18 +17,29 @@ function getUNQfy(filename = '../../UNQfy/data.json') {
 function saveUNQfy(unqfy, filename = 'data.json') {
 unqfy.save(filename);
 }
-  
-artistRouter.get('/2', function(req, res) {
-    let u = new getUNQfy();
-    console.log(u);
-    // const artist = u.showArtist();
-    
-    res.send()
+
+// get artist by ID
+artistRouter.get('/:id', function(req, res) {
+    let unq = new getUNQfy();
+    const artistJSON = unq.getArtistById(req.params.id);
+    artistJSON.albumes = artistJSON.albumes.map((a)=>a.name);
+    res.json(artistJSON);
   });
+
+// get all artist
+artistRouter.get('/', function(req, res) {
+  let unq = new getUNQfy();
+  const artistas = unq.showArtist();
+  artistas.forEach(artistJSON => {
+    artistJSON.albumes = artistJSON.albumes.map((a)=>a.name);  
+  });
+  res.json(artistas);
+});
+
 
 app.use('/api/artists', artistRouter);
 
 
-app.listen(3000, () => {
+app.listen(5000, () => {
  console.log("El servidor está inicializado en el puerto 3000");
 });
