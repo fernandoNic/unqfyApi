@@ -4,7 +4,11 @@ const unqmod = require("../unqfy/unqfy");
 const fs = require('fs'); // necesitado para guardar/cargar unqfy
 
 const  artistRouter = express.Router();
+const  albumesRouter = express.Router();
+const  tracksRouter = express.Router();
+const  playlistRouter = express.Router();
 
+let UNQFY = new getUNQfy();
 
 function getUNQfy(filename = '../unqfy/data.json') {
     let unqfy = new unqmod.UNQfy();
@@ -20,24 +24,41 @@ unqfy.save(filename);
 
 // get artist by ID
 artistRouter.get('/:id', function(req, res) {
-    let unq = new getUNQfy();
-    const artistJSON = unq.getArtistById(req.params.id);
+    const artistJSON = UNQFY.getArtistById(req.params.id);
     artistJSON.albumes = artistJSON.albumes.map((a)=>a.name);
     res.json(artistJSON);
-  });
+});
 
 // get all artist
 artistRouter.get('/', function(req, res) {
-  let unq = new getUNQfy();
-  const artistas = unq.showArtist();
+  const artistas = UNQFY.showArtist();
   artistas.forEach(artistJSON => {
     artistJSON.albumes = artistJSON.albumes.map((a)=>a.name);  
   });
   res.json(artistas);
 });
 
+// get album by ID
+albumesRouter.get('/:id', function(req, res) {
+  const albumJSON = UNQFY.getAlbumById(req.params.id);
+  albumJSON.autor = albumJSON.autor.name; 
+  res.json(albumJSON);
+});
+
+// get all albums
+albumesRouter.get('/', function(req, res) {
+  let albumes = UNQFY.showAlbumes();
+  albumes.forEach((albumJson)=>{
+    albumJson.tracks.map((track)=>track.name);
+  });
+  res.json(albumes);
+});
+
 
 app.use('/api/artists', artistRouter);
+app.use('/api/albums', albumesRouter);
+app.use('/api/tracks', tracksRouter);
+app.use('/api/playlists', playlistRouter);
 
 
 app.listen(5000, () => {
